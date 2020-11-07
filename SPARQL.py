@@ -43,10 +43,10 @@ def query():
     print(g.serialize(format='n3').decode("utf-8"))
 
 
-def RDF_parser(URL):
+def RDF_parser(URL, printbool):
+    print("Retreiving "+str(URL))
     # parse in an RDF file hosted on the Internet
     result = g.parse(URL)
-
     # loop through each triple in the graph (subj, pred, obj)
     for subj, pred, obj in g:
         # check if there is at least one triple in the Graph
@@ -54,17 +54,20 @@ def RDF_parser(URL):
             raise Exception("It better be!")
 
     # print the number of "triples" in the Graph
-    print("graph has {} statements.".format(len(g)))
+    print("Graph has {} statements.".format(len(g)))
     # prints graph has 86 statements.
 
-    # print out the entire Graph in the RDF Turtle format
-    print(g.serialize(format="turtle").decode("utf-8"))
+    if printbool:
+        # print out the entire Graph in the RDF Turtle format
+        print(g.serialize(format="turtle").decode("utf-8"))
+
+    return g
 
 
 if __name__ == "__main__":
     print("_____________________MusicGroup________________________")
-    RDF_parser("http://purl.org/ontology/mo/MusicGroup")
+    RDF_parser("http://purl.org/ontology/mo/MusicGroup", False)
     print("_____________________Wikidata_"
           "MusicalEnsemble________________________")
-    RDF_parser("https://www.wikidata.org/wiki/Special:Q2088357")
+    RDF_parser("http://www.wikidata.org/entity/Q2088357", False)
 
