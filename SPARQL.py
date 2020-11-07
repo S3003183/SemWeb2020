@@ -62,4 +62,9 @@ def RDF_parser(URL):
 
 
 if __name__ == "__main__":
-    RDF_parser("http://www.w3.org/People/Berners-Lee/card")
+    print("_____________________MusicGroup________________________")
+    RDF_parser("http://purl.org/ontology/mo/MusicGroup")
+    print("_____________________Wikidata_"
+          "MusicalEnsemble________________________")
+    RDF_parser("https://www.wikidata.org/wiki/Special:Q2088357")
+
