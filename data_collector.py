@@ -64,14 +64,16 @@ def get_description(object_url):
 #     return instance_labels
 
 ######### Main #########
-instances_url = "http://purl.org/ontology/mo/Track"
+instances_url = "http://purl.org/ontology/mo/MusicArtist"
 instances = get_class_instances(instances_url)['results']['bindings']
 for instance in instances:
     object_url = instance['instance']['value']
     object_description = get_description(object_url)
 
     results_df = object_description['results']['bindings']
-    filename=object_description['results']['bindings'][6]['hasValue']['value']
-    filename = filename.replace('/', '')
-    with open(f"data/songs/{filename}.json", "w") as outfile:
-        json.dump(results_df, outfile)
+    for data_prop in results_df:
+        if data_prop['property']['value'] == "http://www.w3.org/2000/01/rdf-schema#label":
+            filename=data_prop['hasValue']['value']
+            filename = filename.replace('/', '')  
+            with open(f"data/artists/{filename}.json", "w") as outfile:
+                json.dump(results_df, outfile)          

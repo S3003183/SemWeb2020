@@ -1,16 +1,14 @@
 import json
 import os
 
-alldata = []
-directory = 'data/songs'
+alldata = {}
+directory = 'data/artists'
 for filename in os.listdir(directory):
     print(os.path.join(directory, filename))
     with open(os.path.join(directory, filename)) as f:
         song = json.load(f)
-        data = {}
-        data[song[6]['hasValue']['value']] = song
-        alldata.append(data)
+        alldata[filename.replace('.json', '')] = song
 
-with open(f"data/songs/all_songs.json", "w") as outfile:
+with open(f"data/artists/all_artists.json", "w") as outfile:
     json.dump(alldata, outfile)
 
