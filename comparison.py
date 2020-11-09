@@ -23,8 +23,11 @@ g2 = Graph().parse(format='n3', data='''
 g1 = SPARQL.RDF_parser("http://purl.org/ontology/mo/MusicGroup", False)
 g2 = SPARQL.RDF_parser("http://purl.org/ontology/mo/MusicGroup", False)
 
+print("Converting graphs to isomorphic")
 iso1 = to_isomorphic(g1)
 iso2 = to_isomorphic(g2)
+
+print("Calculation graph diff")
 
 print(iso1 == iso2)
 

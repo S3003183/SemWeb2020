@@ -1,35 +1,21 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 import pandas as pd
+# from music_ontology import get_classlist, get_class_instances, get_description
+from data.mo_artist_names import artist_names
+# from data.mo_artist_ids_names import artist_ids_names
+from wikidata import update_or_create_artist, remove_artist_instance, create_artist
+import json
+import os
 
-def run_sparql_query(url, query, return_format):
-    sparql = SPARQLWrapper(url)
+all_songs_path = 'data/songs/all_songs.json'
 
-    sparql.setQuery(query)
-    sparql.setReturnFormat(return_format)
-    return sparql.query().convert()
-
+def read_json(path):
+    with open(path) as f:
+        return json.load(f)
 
 
-wikidata_url = "https://query.wikidata.org/sparql"
-wikidata_query = """
-    SELECT ?releasetype ?releasetypeLabel
-    WHERE {?releasetype wdt:P279 wd:Q2431196 .
-           service wikibase:label { bd:serviceParam wikibase:language "en". }
-          }
+all_songs = read_json(all_songs_path)
+all_artists = artist_names
 
-    """
+update_or_create_artist("Arnaud Thuilliez")
 
-# mo_url = "http://dbtune.org/bbc/peel/sparql/"
-mo_url = "http://dbtune.org/musicbrainz/sparql"
-# mo_url = "http://dbtune.org/musicbrainz/snorql/"
-mo_query = """
-SELECT DISTINCT ?class
-WHERE { [] a ?class }
-ORDER BY ?class
-    """
-
-wikidata_results = run_sparql_query(url = wikidata_url, query=wikidata_query, return_format=JSON)
-mo_results = run_sparql_query(url = mo_url, query=mo_query, return_format=JSON)
-
-results_df = pd.json_normalize(mo_results['results']['bindings'])
-print(results_df[['class.value']])

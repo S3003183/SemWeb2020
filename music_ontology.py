@@ -44,11 +44,29 @@ def get_description(object_url):
     """
     return run_sparql_query(sparql_url, get_instace_description_query, JSON)
 
+# def get_class_instance_labels(class_url):
+#     get_class_instance_labels_query = f"""
+#     SELECT DISTINCT ?instance ?instanceLabel
+#     WHERE {{
+#      {{?instance a <http://purl.org/ontology/mo/MusicArtist>}}
+#     UNION 
+#     {{?instance rdfs:label ?instanceLabel}}
+#     }}
+#     ORDER BY ?instance
+#     """
+#     instances = get_class_instances(class_url)
+#     instance_labels = []
+#     # for instance in instances:
+
+
+#     return instance_labels
+
 ######### Main #########
 
-class_list = get_classlist(sparql_url)
-class_instances = get_class_instances(class_url)
-object_description = get_description(object_url)
+# class_list = get_classlist(sparql_url)
+# class_instances = get_class_instances(class_url)
+# object_description = get_description(object_url)
+# # class_instance_labels = get_class_instance_labels(class_url)
 
-results_df = pd.json_normalize(class_list['results']['bindings'])
-print(results_df[['class.value']])
+# results_df = pd.json_normalize(class_list['results']['bindings'])
+# print(results_df[['class.value']])
