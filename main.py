@@ -17,6 +17,7 @@ def read_json(path):
 all_artists = read_json(all_artists_path)
 abc = get_musicbraiz_id(all_artists['Kevin Dooley'])
 
+update_or_create_artist(all_artists['Little Screaming Pilgrims'])
 update_or_create_artist(all_artists['Johnny Kass'])
 # remove_artist_instance("Bertram Ritter")
 

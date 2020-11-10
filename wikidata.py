@@ -40,7 +40,7 @@ def update_artist(entity, artist_obj):
         data.append(wdi_core.WDExternalID(value=get_musicbraiz_id(artist_obj), prop_nr=MUSIC_BRAINZ_PROP_ID))
     
     write_to_wikidata(entity, data)
-    print(f"Entity {get_artist_name(artist_obj)} has been updated.")
+    print(f"Entity {get_artist_name(artist_obj)} has been updated on WikiData server.")
 
 def create_artist(artist_obj):
     data = []
@@ -54,7 +54,7 @@ def create_artist(artist_obj):
     
     login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
     entity.write(login_instance)
-    print(f"Entity {artist_name} has been created.")
+    print(f"Entity {artist_name} has been created on WikiData server.")
 
 def get_attribute(artist_obj, attribute_link):
     for data_prop in artist_obj:
@@ -97,16 +97,16 @@ def remove_artist_instance(artist_name):
             data.append(wdi_core.WDItemID(value=class_id, prop_nr=INSTANCE_OF_ID))
         write_to_wikidata(entity, data)
 
-def remove_musicbrainzid_instance(artist_name):
-    search_results = wdi_core.WDItemEngine.get_wd_search_results(artist_name)
-    entity = wdi_core.WDItemEngine(wd_item_id=search_results[0])
-    property_ids = get_property_ids(entity)
-    if MUSIC_BRAINZ_PROP_ID in existing_class_ids:
-        data = [] 
-        # Keep existing instaceOf relations 
-        property_ids.remove(MUSIC_BRAINZ_PROP_ID) 
-        for class_id in existing_class_ids:
-            data.append(wdi_core.WDItemID(value=class_id, prop_nr=INSTANCE_OF_ID))
-        write_to_wikidata(entity, data)
+# def remove_musicbrainzid_instance(artist_name):
+#     search_results = wdi_core.WDItemEngine.get_wd_search_results(artist_name)
+#     entity = wdi_core.WDItemEngine(wd_item_id=search_results[0])
+#     property_ids = get_property_ids(entity)
+#     if MUSIC_BRAINZ_PROP_ID in existing_class_ids:
+#         data = [] 
+#         # Keep existing instaceOf relations 
+#         property_ids.remove(MUSIC_BRAINZ_PROP_ID) 
+#         for class_id in existing_class_ids:
+#             data.append(wdi_core.WDItemID(value=class_id, prop_nr=INSTANCE_OF_ID))
+#         write_to_wikidata(entity, data)
         
         
