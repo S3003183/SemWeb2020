@@ -3,7 +3,7 @@ import pandas as pd
 # from music_ontology import get_classlist, get_class_instances, get_description
 from data.mo_artist_names import artist_names
 # from data.mo_artist_ids_names import artist_ids_names
-from wikidata import update_or_create_artist, remove_artist_instance, create_artist, get_musicbraiz_id
+from wikidata import update_or_create_artist, remove_artist_instance, create_artist, get_musicbraiz_id, get_all_songs
 import json
 import os
 
@@ -15,8 +15,9 @@ def read_json(path):
 
 
 all_artists = read_json(all_artists_path)
-abc = get_musicbraiz_id(all_artists['Kevin Dooley'])
+artist = all_artists['Screwtape']
+songs = get_all_songs(artist)
 
-update_or_create_artist(all_artists['Johnny Kass'])
+update_or_create_artist(all_artists['Cadaveric Crematorium'])
 # remove_artist_instance("Bertram Ritter")
 
