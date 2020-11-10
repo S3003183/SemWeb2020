@@ -17,7 +17,13 @@ def read_json(path):
 all_artists = read_json(all_artists_path)
 artist = all_artists['Screwtape']
 songs = get_all_songs(artist)
+all_artists_arr = []
+for a in all_artists:
+    all_artists_arr.append(a)
 
-update_or_create_artist(all_artists['Cadaveric Crematorium'])
-# remove_artist_instance("Bertram Ritter")
+new_all_artists = all_artists_arr[300:]
+
+update_or_create_artist(all_artists['Teresa Catalán'])
+update_or_create_artist(all_artists['Don Omar y Hector El Bambino'])
+# remove_artist_instance("Teresa Catalán")
 

@@ -1,5 +1,6 @@
 from wikidataintegrator import wdi_core, wdi_login
 from music_ontology import get_description
+import time
 
 MUSICIAN_ID = 'Q639669'
 INSTANCE_OF_ID = 'P31'
@@ -82,6 +83,10 @@ def get_musicbraiz_id(artist_obj):
     result = result.replace('http://musicbrainz.org/artist/', '')
     return result
 
+def get_musicbrainz_song_id(link):
+    link = link.replace('http://musicbrainz.org/track/', '')
+    return link
+
 def get_all_songs(artist_obj):
     all_songs = []
     for data_prop in artist_obj:
@@ -97,18 +102,19 @@ def get_song_name(song_obj):
 def get_song_id(track_link):
     return track_link.replace('db:track/', '')
 
-def create_song(song_obj, artist_obj):
+def create_song1(song_obj, artist_obj):
     artist_id_on_wikidata = wdi_core.WDItemEngine.get_wd_search_results(get_artist_name(artist_obj))[0]
 
     data = []
-    song_name = get_song_name(song_obj)
+    # song_name = get_song_name(song_obj)
+    song_name = 'Tiengo de calmas'
     artist_name = get_artist_name(artist_obj)
     data.append(wdi_core.WDItemID(value=SONG_ID, prop_nr=INSTANCE_OF_ID))
     data.append(wdi_core.WDItemID(value=artist_id_on_wikidata, prop_nr=PERFORMER_ID))
-    data.append(wdi_core.WDString(value=song_name, prop_nr=TITLE_ID))
+    # data.append(wdi_core.WDString(value=song_name, prop_nr=TITLE_ID))
     # data.append(wdi_core.WDExternalID(value=, prop_nr=PUBLICATION_DATE_ID))
-    # data.append(wdi_core.WDString(value=f"{} seconds", prop_nr=DURATION_ID))
-    # data.append(wdi_core.WDExternalID(value=, prop_nr=MUSIC_BRAINZ_SONG_PROP_ID))
+    # data.append(wdi_core.WDString(value=f"{219346} seconds", prop_nr=DURATION_ID))
+    data.append(wdi_core.WDExternalID(value=get_musicbrainz_song_id('http://musicbrainz.org/track/1255d2dc-2844-44a9-8bc6-93d870215b89'), prop_nr=MUSIC_BRAINZ_SONG_PROP_ID))
 
 
     entity = wdi_core.WDItemEngine(data=data)
@@ -118,8 +124,32 @@ def create_song(song_obj, artist_obj):
     
     login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
     entity.write(login_instance)
-    print(f"Song {artist_name} has been created on WikiData server.")
+    print(f"Song {song_name} by {artist_name} has been created on WikiData server.")
     
+def create_song2(song_obj, artist_obj):
+    artist_id_on_wikidata = wdi_core.WDItemEngine.get_wd_search_results(get_artist_name(artist_obj))[0]
+
+    data = []
+    # song_name = get_song_name(song_obj)
+    song_name = 'Tuongs'
+    artist_name = get_artist_name(artist_obj)
+    data.append(wdi_core.WDItemID(value=SONG_ID, prop_nr=INSTANCE_OF_ID))
+    data.append(wdi_core.WDItemID(value=artist_id_on_wikidata, prop_nr=PERFORMER_ID))
+    # data.append(wdi_core.WDString(value=song_name, prop_nr=TITLE_ID))
+    # data.append(wdi_core.WDExternalID(value=, prop_nr=PUBLICATION_DATE_ID))
+    # data.append(wdi_core.WDString(value=f"{219346} seconds", prop_nr=DURATION_ID))
+    data.append(wdi_core.WDExternalID(value=get_musicbrainz_song_id('http://musicbrainz.org/track/82f775f5-27fe-42e2-af5e-36401bbfc02b'), prop_nr=MUSIC_BRAINZ_SONG_PROP_ID))
+
+
+    entity = wdi_core.WDItemEngine(data=data)
+    entity.set_label(song_name)
+    entity.set_description(f"{song_name} by {artist_name}")
+    
+    
+    login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
+    entity.write(login_instance)
+    print(f"Song {song_name} by {artist_name} has been created on WikiData server.")
+
 
 def update_or_create_artist(artist_obj):
     artist_name = get_artist_name(artist_obj)
@@ -127,15 +157,17 @@ def update_or_create_artist(artist_obj):
     if len(search_results) > 0:
         entity = wdi_core.WDItemEngine(wd_item_id=search_results[0])
         update_artist(entity, artist_obj)
+        create_song1({}, artist_obj)
     else: 
         create_artist(artist_obj)
+        # time.sleep(10)   
+        # create_song2({}, artist_obj)
+    # all_songs = get_all_songs(artist_obj)
+    # for song in all_songs:
+    #     id = get_song_id(song['isValueOf']['value'])
+    #     song_url = f"http://dbtune.org/musicbrainz/resource/track/{id}"
+        # song_obj = get_description(song_url)
     
-    all_songs = get_all_songs(artist_obj)
-    for song in all_songs:
-        id = get_song_id(song['isValueOf']['value'])
-        song_url = f"http://dbtune.org/musicbrainz/resource/track/{id}"
-        song_obj = get_description(song_url)
-        create_song(song_obj, artist_obj)
 
 
 def remove_artist_instance(artist_name):
