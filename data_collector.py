@@ -82,20 +82,49 @@ def collect_artists_data():
                     json.dump(results_df, outfile) 
 
 def collect_artists_songs():
-    artist_name = 'Screwtape'
     all_artists = read_json(all_artists_path)
-    artist = all_artists[artist_name]
-    all_songs = get_all_songs(artist)
-    for song in all_songs:
-        id = get_song_id(song['isValueOf']['value'])
-        song_url = f"http://dbtune.org/musicbrainz/resource/track/{id}"
-        song_obj = get_description(song_url)
+    for artist_name, artist in all_artists.items():
+        if os.path.exists(f'data/songs/artists/{artist_name}'):
+            continue
+        all_songs = get_all_songs(artist)
+        for song in all_songs:
+            song_url = get_song_id(song['isValueOf']['value'])
+            # song_url = f"http://dbtune.org/musicbrainz/resource/track/{id}"
+            song_obj = get_description(song_url)
 
-        for data_prop in song_obj:
-            if data_prop['property']['value'] == "http://www.w3.org/2000/01/rdf-schema#label":
-                filename=data_prop['hasValue']['value']
-                filename = filename.replace('/', '')  
-                with open(f"data/songs/{artist_name}/{filename}.json", "w") as outfile:
-                    json.dump(song_obj, outfile)   
+            for data_prop in song_obj['results']['bindings']:
+                if data_prop['property']['value'] == "http://www.w3.org/2000/01/rdf-schema#label":
+                    filename=data_prop['hasValue']['value']
+                    filename = filename.replace('/', '') 
+                    if not os.path.exists(f'data/songs/artists/{artist_name}'): 
+                        os.makedirs(f'data/songs/artists/{artist_name}')
+                    with open(f"data/songs/artists/{artist_name}/{filename}.json", "w+") as outfile:
+                        json.dump(song_obj, outfile)   
 
-collect_artists_songs()       
+def combine_song_jsons_per_artist():
+    alldata = {}
+    root_dir = 'data/songs/artists'
+    for artist_dir_name in os.listdir(root_dir):
+        path_to_artist_dir = os.path.join(root_dir, artist_dir_name)
+        for filename in os.listdir(path_to_artist_dir):
+            print(os.path.join(path_to_artist_dir, filename))
+            with open(os.path.join(path_to_artist_dir, filename)) as f:
+                song = json.load(f)
+                alldata[filename.replace('.json', '')] = song
+
+        with open(f"data/songs/artist_allsongs/{artist_dir_name}.json", "w") as outfile:
+            json.dump(alldata, outfile)
+
+def combine_artist_songs_into_one_object():
+    alldata = {}
+    directory = 'data/songs/artist_allsongs'
+    for filename in os.listdir(directory):
+        print(os.path.join(directory, filename))
+        with open(os.path.join(directory, filename)) as f:
+            song = json.load(f)
+            alldata[filename.replace('.json', '')] = song
+
+    with open(f"data/songs/all_song_data.json", "w") as outfile:
+        json.dump(alldata, outfile)
+
+combine_artist_songs_into_one_object()
