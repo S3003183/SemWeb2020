@@ -1,7 +1,7 @@
 # WikiData music updater
 A tool for updating WikiData with data obtained from MusicBraiz ontology
 
-## Installation
+## Installation & running the project
 
 ```bash
 

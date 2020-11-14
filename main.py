@@ -31,7 +31,7 @@ def main():
         update_or_create_artist(artist_obj)
         
         # Wait for data to be updated on WikiData server
-        sleep(7)
+        sleep(10)
         artist_entity = retrieve_artist_from_wikidata_if_exists(artist_name)
         artist_wikidata_id = get_artist_wikidata_id(artist_entity)
         

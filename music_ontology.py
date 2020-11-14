@@ -1,5 +1,4 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
-import pandas as pd
 
 ######### Member variables #########
 sparql_url = "http://dbtune.org/musicbrainz/sparql"
