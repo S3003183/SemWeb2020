@@ -6,4 +6,4 @@ apicache-py3/
 __pycache/
 venv/
 data2/
-data/
+__pycache__/
