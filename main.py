@@ -1,35 +1,44 @@
-from SPARQLWrapper import SPARQLWrapper, JSON
-import pandas as pd
-# from music_ontology import get_classlist, get_class_instances, get_description
-from data.mo_artist_names import artist_names
-# from data.mo_artist_ids_names import artist_ids_names
-from wikidata import *
-import json
 import os
-
-all_artists_path = 'data/all_artists.json'
-songs_dir_path = 'data/songs/artist_allsongs'
-
-def read_json(path):
-    with open(path) as f:
-        return json.load(f)
+from wikidata import *
+from data_collector import *
+from time import sleep
 
 
-all_artists = read_json(all_artists_path)
-artist_name = 'Teresa Catalán'
-artist = all_artists[artist_name]
-artist_in_path_name = artist_name.replace('/', '')
-songs = read_json(f'{songs_dir_path}/{artist_in_path_name}.json')
-artist_entity = retrieve_artist_from_wikidata_if_exists(artist_name)
-artist_wikidata_id = get_artist_wikidata_id(artist_entity)
-songs_iter = next(iter(songs.items()))
+######### Constants #########
+ALL_ARTISTS_PATH = 'data/all_artists.json'
+SONGS_DIR_PARH = 'data/songs/artist_allsongs'
 
 
-#update_or_create_artist(artist)
-update_or_create_song(songs_iter[1]['results']['bindings'], artist_wikidata_id, artist_name)
-# justin_id = get_artist_wikidata_id(justin)
-# baby = retrieve_song_from_wikidata_if_exists('Baby', justin_id)
-#update_or_create_artist(all_artists['Teresa Catalán'])
-# update_or_create_artist(all_artists['Don Omar y Hec-tor El Bambino'])
-# remove_artist_instance("Teresa Catalán")
+######### Main program code #########
+def main():
+    # Collect artist and song data from DBTune MusicBrainz ontology if not collected before
+    if not os.path.exists('data/artists'): 
+        collect_artists_data()
+    if not os.path.isfile(ALL_ARTISTS_PATH):
+        combine_artist_data()
+    if not os.path.exists('data/songs/artists'):
+        collect_artists_songs()
+    if not os.path.exists(SONGS_DIR_PARH):
+        combine_song_jsons_per_artist()
+    
+    # Read all artists object
+    all_artists = read_json(ALL_ARTISTS_PATH)
+
+    # Get artist data
+    for artist_name, artist_obj in all_artists.items():
+        artist_in_path_name = artist_name.replace('/', '')
+        songs = read_json(f'{SONGS_DIR_PARH}/{artist_in_path_name}.json')
+        update_or_create_artist(artist_obj)
+        
+        # Wait for data to be updated on WikiData server
+        sleep(7)
+        artist_entity = retrieve_artist_from_wikidata_if_exists(artist_name)
+        artist_wikidata_id = get_artist_wikidata_id(artist_entity)
+        
+        # Update song on WikiData server if exists. If does not exist, create a new entity on WikiData
+        for song_name, song_obj in songs.items():
+            update_or_create_song(song_obj, artist_wikidata_id, artist_name)
+
+if __name__ == "__main__":
+    main()
 

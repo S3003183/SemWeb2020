@@ -1,7 +1,7 @@
 from wikidataintegrator import wdi_core, wdi_login
-from music_ontology import get_description
-import time
 
+
+######### Constants #########
 MUSICIAN_ID = 'Q639669'
 INSTANCE_OF_ID = 'P31'
 HUMAN_ID = 'Q5'
@@ -18,8 +18,11 @@ PUBLICATION_DATE_ID = 'P577'
 DURATION_ID = 'P2047'
 MUSIC_BRAINZ_SONG_PROP_ID = 'P435'
 OCCUPATION_ID = 'P106'
+MUSICIAN_KEYWORDS = ['musician', 'band', 'composer', 'singer', 'songwriter', 'producer', 'dj', 'artist']
 
-# Get WikiData object ids (Q123) for a property.
+
+######### Functions #########
+# Get WikiData object ids (Q123) that are linked to the entity via passed property.
 def get_wikidata_property_values(entity, property_id):
     values = []
     if property_id in entity.wd_json_representation['claims']:
@@ -31,10 +34,11 @@ def get_wikidata_property_values(entity, property_id):
 
     return values
 
+# Get WikiData object ids (Q123) that the entity is instace of.
 def get_instanceOf_ids(entity):
     return get_wikidata_property_values(entity, INSTANCE_OF_ID)
 
-# Retreves WikiData ids of song performers
+# Get WikiData ids of song performers
 def get_song_performer_ids(entity):
     return get_wikidata_property_values(entity, PERFORMER_ID)
 
@@ -42,15 +46,17 @@ def get_song_performer_ids(entity):
 def get_property_ids(entity):
     return entity.wd_json_representation['claims']
 
+# Updates entity on WikiData server
 def write_to_wikidata(entity, data):
     login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
     entity.update(data)
     entity.write(login_instance)
     
-
+# Updates artist on WikiData server with data from artist_obj.
 def update_artist(entity, artist_obj):
     existing_occupation_ids = get_wikidata_property_values(entity, OCCUPATION_ID)
 
+    # Keep existing data/object properties
     data = entity.statements
 
     # Set to be musician if not already 
@@ -65,6 +71,7 @@ def update_artist(entity, artist_obj):
     write_to_wikidata(entity, data)
     print(f"Artist {get_artist_name(artist_obj)} has been updated on WikiData server.")
 
+# Creates artist on WikiData server with data from artist_obj.
 def create_artist(artist_obj):
     data = []
     artist_name = get_artist_name(artist_obj)
@@ -77,34 +84,40 @@ def create_artist(artist_obj):
     
     login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
     entity.write(login_instance)
-    print(f"Artist {artist_name} has been created on WikiData server.")
+    print(f"Artist {artist_name} has been added to WikiData server.")
 
-# Get attribute value by providing property type link ("http://www.w3.org/2000/01/rdf-schema#label")
+# Get attribute value by providing property type link (example: "http://www.w3.org/2000/01/rdf-schema#label")
 def get_attribute(artist_obj, attribute_link):
     for data_prop in artist_obj:
         if data_prop['property']['value'] == attribute_link:
             attr_value=data_prop['hasValue']['value']
             return attr_value
 
+# Get artist name from artist object
 def get_artist_name(artist_obj):
     return get_attribute(artist_obj, LABEL_PROP_LINK)
 
+# Get MusicBraiz artist link from artist object
 def get_musicbraiz_artist_link(artist_obj):
     return get_attribute(artist_obj, MUSIC_BRAINZ_PROP_LINK)
 
+# Get MusicBraiz artist id from artist object
 def get_musicbraiz_artist_id(artist_obj):
     link = get_musicbraiz_artist_link(artist_obj)
     id = link.replace('http://musicbrainz.org/artist/', '')
     return id
 
+# Get MusicBraiz song link from song object
 def get_musicbraiz_song_link(song_obj):
     return get_attribute(song_obj, MUSIC_BRAINZ_PROP_LINK)
 
+# Get MusicBraiz song id from song object
 def get_musicbrainz_song_id(song_obj):
     link = get_musicbraiz_song_link(song_obj)
     id = link.replace('http://musicbrainz.org/track/', '')
     return id
 
+# Get all songs for a particular artist
 def get_all_songs(artist_obj):
     all_songs = []
     for data_prop in artist_obj:
@@ -113,69 +126,30 @@ def get_all_songs(artist_obj):
     
     return all_songs
 
+# Get song name from song object
 def get_song_name(song_obj):
     return get_artist_name(song_obj)
 
+# Get song id from track link
 def get_song_id(track_link):
     id = track_link.replace('db:track/', '')
     return id 
 
-def create_song1(song_obj, artist_obj):
-    artist_id_on_wikidata = wdi_core.WDItemEngine.get_wd_search_results(get_artist_name(artist_obj))[0]
+def get_description(entity):
+    if 'en' in  entity.wd_json_representation['descriptions']:
+        return entity.wd_json_representation['descriptions']['en']['value']
+    return ''
 
-    data = []
-    # song_name = get_song_name(song_obj)
-    song_name = 'Tiengo de calmas'
-    artist_name = get_artist_name(artist_obj)
-    data.append(wdi_core.WDItemID(value=SONG_ID, prop_nr=INSTANCE_OF_ID))
-    data.append(wdi_core.WDItemID(value=artist_id_on_wikidata, prop_nr=PERFORMER_ID))
-    # data.append(wdi_core.WDString(value=song_name, prop_nr=TITLE_ID))
-    # data.append(wdi_core.WDExternalID(value=, prop_nr=PUBLICATION_DATE_ID))
-    # data.append(wdi_core.WDString(value=f"{219346} seconds", prop_nr=DURATION_ID))
-    data.append(wdi_core.WDExternalID(value=get_musicbrainz_song_id('http://musicbrainz.org/track/1255d2dc-2844-44a9-8bc6-93d870215b89'), prop_nr=MUSIC_BRAINZ_SONG_PROP_ID))
-
-
-    entity = wdi_core.WDItemEngine(data=data)
-    entity.set_label(song_name)
-    entity.set_description(f"{song_name} by {artist_name}")
-    
-    
-    login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
-    entity.write(login_instance)
-    print(f"Song {song_name} by {artist_name} has been created on WikiData server.")
-    
-def create_song2(song_obj, artist_obj):
-    artist_id_on_wikidata = wdi_core.WDItemEngine.get_wd_search_results(get_artist_name(artist_obj))[0]
-
-    data = []
-    # song_name = get_song_name(song_obj)
-    song_name = 'Tuongs'
-    artist_name = get_artist_name(artist_obj)
-    data.append(wdi_core.WDItemID(value=SONG_ID, prop_nr=INSTANCE_OF_ID))
-    data.append(wdi_core.WDItemID(value=artist_id_on_wikidata, prop_nr=PERFORMER_ID))
-    # data.append(wdi_core.WDString(value=song_name, prop_nr=TITLE_ID))
-    # data.append(wdi_core.WDExternalID(value=, prop_nr=PUBLICATION_DATE_ID))
-    # data.append(wdi_core.WDString(value=f"{219346} seconds", prop_nr=DURATION_ID))
-    data.append(wdi_core.WDExternalID(value=get_musicbrainz_song_id('http://musicbrainz.org/track/82f775f5-27fe-42e2-af5e-36401bbfc02b'), prop_nr=MUSIC_BRAINZ_SONG_PROP_ID))
-
-
-    entity = wdi_core.WDItemEngine(data=data)
-    entity.set_label(song_name)
-    entity.set_description(f"{song_name} by {artist_name}")
-    
-    
-    login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
-    entity.write(login_instance)
-    print(f"Song {song_name} by {artist_name} has been created on WikiData server.")
-
+# Retrieve artist entity from WikiData if exists
 def retrieve_artist_from_wikidata_if_exists(artist_name):
     artist_search_result_ids = wdi_core.WDItemEngine.get_wd_search_results(artist_name)
     for id in artist_search_result_ids:
         entity = wdi_core.WDItemEngine(wd_item_id=id)
-        if MUSICIAN_ID in get_wikidata_property_values(entity, OCCUPATION_ID):
+        if any(keyword in get_description(entity).lower() for keyword in MUSICIAN_KEYWORDS):
             return entity
     return None
 
+# Retrieve song entity from WikiData if exists
 def retrieve_song_from_wikidata_if_exists(song_name, artist_wikidata_id):
     song_search_result_ids = wdi_core.WDItemEngine.get_wd_search_results(song_name)
     for id in song_search_result_ids:
@@ -184,9 +158,12 @@ def retrieve_song_from_wikidata_if_exists(song_name, artist_wikidata_id):
             return entity
     return None
 
+# Get WikiData id (Q123) from an WikiData entity
 def get_artist_wikidata_id(entity):
     return entity.wd_item_id
 
+# Updates artist on WikiData server with data from artist_obj.
+# If artist was not found on WikiData, new entity on WikiData gets created.
 def update_or_create_artist(artist_obj):
     artist_name = get_artist_name(artist_obj)
     entity = retrieve_artist_from_wikidata_if_exists(artist_name)
@@ -195,6 +172,7 @@ def update_or_create_artist(artist_obj):
     else: 
         create_artist(artist_obj)
 
+# Updates song on WikiData server with data from song_obj.
 def update_song(entity, song_obj, artist_wikidata_id, artist_name):
     existing_instanceOf_ids = get_wikidata_property_values(entity, INSTANCE_OF_ID)
 
@@ -219,8 +197,9 @@ def update_song(entity, song_obj, artist_wikidata_id, artist_name):
     entity.set_description(f"Song performed by {artist_name}")
 
     write_to_wikidata(entity, data)
-    print(f"Song {get_song_name(song_obj)} by {artist_name} has been created on WikiData server.")
+    print(f"Song {get_song_name(song_obj)} by {artist_name} has been updated on WikiData server.")
 
+# Creates song on WikiData server with data from song_obj.
 def create_song(song_obj, artist_wikidata_id, artist_name):
     data = []
     song_name = get_song_name(song_obj)
@@ -236,8 +215,10 @@ def create_song(song_obj, artist_wikidata_id, artist_name):
     
     login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
     entity.write(login_instance)
-    print(f"Song {song_name} by {artist_name} has been created on WikiData server.")
+    print(f"Song {song_name} by {artist_name} has been added to WikiData server.")
 
+# Updates song on WikiData server with data from song_obj.
+# If song was not found on WikiData, new entity on WikiData gets created.
 def update_or_create_song(song_obj, artist_wikidata_id, artist_name):
     song_name = get_song_name(song_obj)
     entity = retrieve_song_from_wikidata_if_exists(song_name, artist_wikidata_id)
