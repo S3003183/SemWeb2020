@@ -83,8 +83,9 @@ def create_artist(artist_obj):
     entity.set_description(MUSICIAN)
     
     login_instance = wdi_login.WDLogin(user='SemWeb2020', pwd='nestor2020')
-    entity.write(login_instance)
+    entity_id = entity.write(login_instance)
     print(f"Artist {artist_name} has been added to WikiData server.")
+    return entity_id
 
 # Get attribute value by providing property type link (example: "http://www.w3.org/2000/01/rdf-schema#label")
 def get_attribute(artist_obj, attribute_link):
@@ -171,7 +172,7 @@ def update_or_create_artist(artist_obj):
     if entity:
         update_artist(entity, artist_obj)
     else: 
-        create_artist(artist_obj)
+        return create_artist(artist_obj)
 
 # Updates song on WikiData server with data from song_obj.
 def update_song(entity, song_obj, artist_wikidata_id, artist_name):

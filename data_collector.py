@@ -7,8 +7,10 @@ from music_ontology import *
 ######### Functions #########
 # Reads a json file stored in path
 def read_json(path):
-    with open(path) as f:
-        return json.load(f)
+    if os.path.isfile(path):
+        with open(path) as f:
+            return json.load(f)
+    return {}
 
 # Collect data of arists in MusicBrainz ontology
 # Store each artist as json file in data/artists
