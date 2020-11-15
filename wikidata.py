@@ -136,8 +136,9 @@ def get_song_id(track_link):
     return id 
 
 def get_description(entity):
-    if 'en' in  entity.wd_json_representation['descriptions']:
-        return entity.wd_json_representation['descriptions']['en']['value']
+    if 'descriptions' in entity.wd_json_representation:
+        if 'en' in  entity.wd_json_representation['descriptions']:
+            return entity.wd_json_representation['descriptions']['en']['value']
     return ''
 
 # Retrieve artist entity from WikiData if exists
@@ -154,7 +155,7 @@ def retrieve_song_from_wikidata_if_exists(song_name, artist_wikidata_id):
     song_search_result_ids = wdi_core.WDItemEngine.get_wd_search_results(song_name)
     for id in song_search_result_ids:
         entity = wdi_core.WDItemEngine(wd_item_id=id)
-        if SONG_ID in get_wikidata_property_values(entity, INSTANCE_OF_ID) and artist_wikidata_id in get_wikidata_property_values(entity, PERFORMER_ID): 
+        if artist_wikidata_id in get_wikidata_property_values(entity, PERFORMER_ID): 
             return entity
     return None
 
@@ -176,6 +177,7 @@ def update_or_create_artist(artist_obj):
 def update_song(entity, song_obj, artist_wikidata_id, artist_name):
     existing_instanceOf_ids = get_wikidata_property_values(entity, INSTANCE_OF_ID)
 
+    song_name = get_song_name(song_obj)
     data = entity.statements
     song_mb_id = get_musicbrainz_song_id(song_obj)
     # Set to be musician if not already 
@@ -192,12 +194,16 @@ def update_song(entity, song_obj, artist_wikidata_id, artist_name):
         data.append(wdi_core.WDItemID(value=artist_wikidata_id, prop_nr=PERFORMER_ID))
     elif artist_wikidata_id not in get_wikidata_property_values(entity, PERFORMER_ID):
         data.append(wdi_core.WDItemID(value=artist_wikidata_id, prop_nr=PERFORMER_ID))
+        # Set performer to be the artist if no performer set or performer is not artist
+    # Set song name property
+    if TITLE_ID not in entity.wd_json_representation['claims']:
+        data.append(wdi_core.WDMonolingualText(value=song_name, prop_nr=TITLE_ID))
     
-
-    entity.set_description(f"Song performed by {artist_name}")
+    if get_description(entity) == '':
+        entity.set_description(f"Song performed by {artist_name}")
 
     write_to_wikidata(entity, data)
-    print(f"Song {get_song_name(song_obj)} by {artist_name} has been updated on WikiData server.")
+    print(f"Song {song_name} by {artist_name} has been updated on WikiData server.")
 
 # Creates song on WikiData server with data from song_obj.
 def create_song(song_obj, artist_wikidata_id, artist_name):
@@ -206,6 +212,7 @@ def create_song(song_obj, artist_wikidata_id, artist_name):
     data.append(wdi_core.WDItemID(value=SONG_ID, prop_nr=INSTANCE_OF_ID))
     data.append(wdi_core.WDItemID(value=artist_wikidata_id, prop_nr=PERFORMER_ID))
     data.append(wdi_core.WDExternalID(value=get_musicbrainz_song_id(song_obj), prop_nr=MUSIC_BRAINZ_SONG_PROP_ID))
+    data.append(wdi_core.WDMonolingualText(value=song_name, prop_nr=TITLE_ID))
 
 
     entity = wdi_core.WDItemEngine(data=data)
