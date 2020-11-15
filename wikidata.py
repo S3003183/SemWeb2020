@@ -76,7 +76,7 @@ def create_artist(artist_obj):
     data = []
     artist_name = get_artist_name(artist_obj)
     data.append(wdi_core.WDItemID(value=HUMAN_ID, prop_nr=INSTANCE_OF_ID))
-    data.append(wdi_core.WDItemID(value=MUSICIAN_ID, prop_nr=INSTANCE_OF_ID))
+    data.append(wdi_core.WDItemID(value=MUSICIAN_ID, prop_nr=OCCUPATION_ID))
     data.append(wdi_core.WDExternalID(value=get_musicbraiz_artist_id(artist_obj), prop_nr=MUSIC_BRAINZ_PROP_ID))
     entity = wdi_core.WDItemEngine(data=data)
     entity.set_label(artist_name)

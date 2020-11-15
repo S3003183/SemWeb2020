@@ -1,5 +1,5 @@
 # WikiData music updater
-A tool for updating WikiData with data obtained from MusicBraiz ontology. The tool updates existing WikiData artists and songs their songs if entites already exist on WikiData. If artists or songs do not exist on WikiData, they are added to WikiData server. 
+A tool for updating WikiData with data obtained from MusicBraiz ontology. The tool updates existing WikiData artists and their songs if entites already exist on WikiData. If artists or songs do not exist on WikiData, they are added to WikiData. 
 
 For artists the following properties are set: 
 - `occupation` is set to be `musician (Q639669)`
@@ -24,3 +24,24 @@ pip3 install -r requirements.txt
 
 python3 main.py
 ```
+
+## Detailed description of how tool opereates
+
+### Data collection
+The tool firstly collects data from MusicBrainz ontology (accessable on [DBTune](http://dbtune.org/musicbrainz/snorql/)) via SPARQL queries. The main reason for collecting the data is issues with DBTune's availability. During the project development we experienced that the server was down multiple times each day for sereval hours. The collected data is stored 
+
+The collected data is stored in `data` directory.
+- `data/all_artists.json` stores data of all artists in the following form:
+{
+    {artist_name: data},
+    {artist_name: data},
+    ...
+}
+- `data/artist_allsongs/<artist_name>.json` stores data of all songs for a particular artist in the following form:
+{
+    {song_name: data},
+    {song_name: data},
+    ...
+}
+
+
