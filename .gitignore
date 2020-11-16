@@ -1,7 +1,0 @@
-.gitignore
-.DS_Store
-.vscode/
-.idea/
-apicache-py3/
-__pycache/
-venv/
